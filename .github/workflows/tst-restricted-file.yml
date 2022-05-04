@@ -1,0 +1,40 @@
+---
+name: magic file merging
+
+on: 
+  push:
+    branches: 
+      - "file_auto_*"
+    paths: 
+      - "some-path/**/special.file"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest  # windows-latest | macos-latest
+    name: Test changed-files
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # OR "2" -> To retrieve the preceding commit.
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v19
+
+      - name: List all changed files
+        run: |
+          for file in ${{ steps.changed-files.outputs.all_changed_files }}; do
+            echo "$file was changed"
+          done
+
+      - name: Get specific changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v19
+        with:
+          files: |
+            some-path/**/special.file
+
+      - name: Run step if only the files listed above change
+        if: steps.changed-files-specific.outputs.only_changed == 'true'
+        run: |
+          echo "Only files listed above have changed."
